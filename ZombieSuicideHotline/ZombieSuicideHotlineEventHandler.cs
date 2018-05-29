@@ -15,20 +15,6 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnRoundStart(Server server)
 		{
-			foreach (Player player in server.GetPlayers())
-			{
-				switch (player.Class.ClassType)
-				{
-					case Classes.SCP_049:
-					case Classes.SCP_096:
-					case Classes.SCP_106:
-					case Classes.SCP_173:
-						this.plugin.SCPSpawnPoints.Add(player.Class.ClassType, player.GetPosition());
-						break;
-				}
-			}
-			plugin.Info("SCPSpawnPoints SIZE " + this.plugin.SCPSpawnPoints.Count);
-
 			foreach (TeamClass teamClass in server.GetClasses())
 			{
 				this.plugin.ClassList.Add(teamClass.ClassType, teamClass);

@@ -23,7 +23,6 @@ namespace ZombieSuicideHotline
 		public HashSet<string> deadDoctors = new HashSet<string>();
 		public TeamClass plagueDoctorClass = null;
 		public TeamClass zombieClass = null;
-        public Dictionary<Classes, Vector> SCPSpawnPoints = new Dictionary<Classes, Vector>();
 		public Dictionary<Classes, TeamClass> ClassList = new Dictionary<Classes, TeamClass>();
 
 		public override void OnEnable()
