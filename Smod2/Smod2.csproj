@@ -7,7 +7,7 @@
     <ProjectGuid>{6B3C975A-CA75-4764-8192-E1D8EC8E6475}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ZombieSuicideHotline</RootNamespace>
+    <RootNamespace>Smod2</RootNamespace>
     <AssemblyName>Smod2</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>

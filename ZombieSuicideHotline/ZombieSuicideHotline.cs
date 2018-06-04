@@ -12,18 +12,17 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombiesuicidehotline",
-		version = "1.0-build17",
+		version = "1.0-build18",
 		SmodMajor = 2,
-		SmodMinor = 0,
-		SmodRevision = 0
+		SmodMinor = 2,
+		SmodRevision = 1
 		)]
 	class ZombieSuicideHotlinePlugin : Plugin
     {
-        public HashSet<string> zombieSuicides = new HashSet<string>();
-		public HashSet<string> deadDoctors = new HashSet<string>();
-		public TeamClass plagueDoctorClass = null;
-		public TeamClass zombieClass = null;
-		public Dictionary<Classes, TeamClass> ClassList = new Dictionary<Classes, TeamClass>();
+		internal bool duringRound = false;
+		internal HashSet<string> scp049Kills = new HashSet<string>();
+		internal HashSet<string> zombieDisconnects = new HashSet<string>();
+		internal Dictionary<Classes, TeamClass> ClassList = new Dictionary<Classes, TeamClass>();
 
 		public override void OnEnable()
         {
@@ -33,16 +32,19 @@ namespace ZombieSuicideHotline
 
         public override void OnDisable()
 		{
+
 		}
 
 		public override void Register()
 		{
             // Register Events
             this.AddEventHandler(typeof(IEventRoundStart), new RoundStartHandler(this), Priority.Highest);
-            this.AddEventHandler(typeof(IEventPlayerDie), new PlayerDieHandler(this), Priority.Highest);
-			//this.AddEventHandler(typeof(IEventAssignTeam), new AssignTeamHandler(this), Priority.High);
-			this.AddEventHandler(typeof(IEventSetClass), new SetClass1Handler(this), Priority.High);
-			this.AddEventHandler(typeof(IEventSetClass), new SetClass2Handler(this), Priority.Normal);
+			this.AddEventHandler(typeof(IEventRoundEnd), new RoundEndHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventPlayerJoin), new PlayerJoinHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventPlayerLeave), new PlayerLeaveHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventSetClass), new SetClassHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventPlayerDie), new PlayerDieHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventPlayerHurt), new PlayerHurtHandler(this), Priority.Highest);
 			// Register config settings
 			this.AddConfig(new Smod2.Config.ConfigSetting("zombie_suicide_hotline_enabled", true, Smod2.Config.SettingType.BOOL, true, "Enables or disables the zombie suicide hotline."));
 		}
