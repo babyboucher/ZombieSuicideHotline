@@ -1,10 +1,11 @@
 ﻿using Smod2;
 using Smod2.API;
 using Smod2.Events;
+using Smod2.EventHandlers;
 
 namespace ZombieSuicideHotline.EventHandlers
 {
-	class RoundStartHandler : IEventRoundStart
+	class RoundStartHandler : IEventHandlerRoundStart
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
@@ -13,19 +14,22 @@ namespace ZombieSuicideHotline.EventHandlers
 			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
 		}
 
-		public void OnRoundStart(Server server)
+		public void OnRoundStart(RoundStartEvent ev)
 		{
 			this.plugin.duringRound = true;
 			this.plugin.scp049Kills = new System.Collections.Generic.HashSet<string>();
 			this.plugin.zombieDisconnects = new System.Collections.Generic.HashSet<string>();
-			foreach (TeamClass teamClass in server.GetClasses())
+			foreach (TeamRole teamClass in ev.Server.GetRoles())
 			{
-				this.plugin.ClassList.Add(teamClass.ClassType, teamClass);
+				if (!this.plugin.ClassList.ContainsKey(teamClass.Role))
+				{
+					this.plugin.ClassList.Add(teamClass.Role, teamClass);
+				}
 			}
-			plugin.Info("ClassList SIZE " + this.plugin.ClassList.Count);
 		}
 	}
-	class RoundEndHandler : IEventRoundEnd
+
+	class RoundEndHandler : IEventHandlerRoundEnd
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
@@ -34,18 +38,13 @@ namespace ZombieSuicideHotline.EventHandlers
 			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
 		}
 
-		public void OnRoundEnd(Server server, Round round)
+		public void OnRoundEnd(RoundEndEvent ev)
 		{
 			this.plugin.duringRound = false;
-			foreach (TeamClass teamClass in server.GetClasses())
-			{
-				this.plugin.ClassList.Add(teamClass.ClassType, teamClass);
-			}
-			plugin.Info("ClassList SIZE " + this.plugin.ClassList.Count);
 		}
 	}
 
-	class PlayerJoinHandler : IEventPlayerJoin
+	class PlayerJoinHandler : IEventHandlerPlayerJoin
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
@@ -54,61 +53,68 @@ namespace ZombieSuicideHotline.EventHandlers
 			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
 		}
 
-		public void OnPlayerJoin(Player player)
+		public void OnPlayerJoin(PlayerJoinEvent ev)
 		{
-			if (this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(player.SteamId))
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
 			{
-				player.ChangeClass(Classes.SCP_049_2, true, true);
-				this.plugin.zombieDisconnects.Add(player.SteamId);
+				System.Timers.Timer t = new System.Timers.Timer
+				{
+					Interval = 7000,
+					AutoReset = false,
+					Enabled = true
+				};
+				t.Elapsed += delegate
+				{
+					plugin.Debug("[OnPlayerJoin] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
+					this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+					ev.Player.ChangeRole(Role.SCP_049_2, true, true);
+				};
 			}
 		}
 	}
 
-	class PlayerLeaveHandler : IEventPlayerLeave
+	class DisconnectHandler : IEventHandlerDisconnect
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
-		public PlayerLeaveHandler(Plugin plugin)
+		public DisconnectHandler(Plugin plugin)
 		{
 			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
 		}
 
-		public void OnPlayerLeave(Player player)
+		public void OnDisconnect(DisconnectEvent ev)
 		{
-			if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(player.SteamId))
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Connection.IpAddress))
 			{
-				this.plugin.scp049Kills.Remove(player.SteamId);
-				this.plugin.zombieDisconnects.Add(player.SteamId);
+				plugin.Debug("[OnPlayerLeave] Removing player [" + ev.Connection.IpAddress + "] from scp049Kills.");
+				this.plugin.scp049Kills.Remove(ev.Connection.IpAddress);
+				plugin.Debug("[OnPlayerLeave] Adding player [" + ev.Connection.IpAddress + "] to zombieDisconnects.");
+				this.plugin.zombieDisconnects.Add(ev.Connection.IpAddress);
 			}
 		}
 	}
 
-	class SetClassHandler : IEventSetClass
+	class SetRoleHandler : IEventHandlerSetRole
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
-		public SetClassHandler(Plugin plugin)
+		public SetRoleHandler(Plugin plugin)
 		{
 			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
 		}
 
-		public void OnSetClass(Player player, TeamClass teamclass, out TeamClass teamclassOutput)
+		public void OnSetRole(PlayerSetRoleEvent ev)
 		{
-			if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(player.SteamId))
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
 			{
-				plugin.Info("Remove player from scp049Kills");
-				this.plugin.scp049Kills.Remove(player.SteamId);
-				teamclassOutput = teamclass;
-			}
-			else
-			{
-				plugin.Info("NOT RESPAWNING ZOMBIE");
-				teamclassOutput = teamclass;
+				plugin.Debug("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
+				this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+				ev.TeamRole = this.plugin.ClassList[Role.SCP_049-2];
 			}
 		}
 	}
 
-	class PlayerDieHandler : IEventPlayerDie
+	class PlayerDieHandler : IEventHandlerPlayerDie
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
@@ -117,25 +123,26 @@ namespace ZombieSuicideHotline.EventHandlers
 			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
 		}
 
-		public void OnPlayerDie(Player player, Player killer, out bool spawnRagdoll)
+		public void OnPlayerDie(PlayerDeathEvent ev)
 		{
-			if (this.plugin.duringRound && killer.Class.ClassType == Classes.SCP_049)
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && ev.Killer.TeamRole.Role == Role.SCP_049)
 			{
-				this.plugin.scp049Kills.Add(player.SteamId);
-				spawnRagdoll = true;
+				plugin.Debug("[OnPlayerDie] Adding player [" + ev.Player.IpAddress + "] from scp049Kills.");
+				this.plugin.scp049Kills.Add(ev.Player.IpAddress);
+				ev.SpawnRagdoll = true;
 			}
-			else if (player.Class.ClassType == Classes.SCP_106)
+			else if (ev.Player.TeamRole.Role == Role.SCP_106)
 			{
-				spawnRagdoll = false;
+				ev.SpawnRagdoll = false;
 			}
 			else
 			{
-				spawnRagdoll = true;
+				ev.SpawnRagdoll = true;
 			}
 		}
 	}
 
-	class PlayerHurtHandler : IEventPlayerHurt
+	class PlayerHurtHandler : IEventHandlerPlayerHurt
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
@@ -144,24 +151,16 @@ namespace ZombieSuicideHotline.EventHandlers
 			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
 		}
 
-		public void OnPlayerHurt(Player player, Player attacker, float damage, out float damageOutput, DamageType type, out DamageType typeOutput)
+		public void OnPlayerHurt(PlayerHurtEvent ev)
 		{
-			switch (player.Class.ClassType)
+			switch (ev.Player.TeamRole.Role)
 			{
-				case Classes.SCP_049_2:
-					if (type == DamageType.TESLA)
+				case Role.SCP_049_2:
+					if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && ev.DamageType == DamageType.TESLA)
 					{
-						typeOutput = DamageType.NONE;
-						damageOutput = 0f;
+						ev.DamageType = DamageType.NONE;
+						ev.Damage = 0f;
 					}
-					else
-					{
-						goto default;
-					}
-					break;
-				default:
-					typeOutput = type;
-					damageOutput = damage;
 					break;
 			}
 		}
