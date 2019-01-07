@@ -13,10 +13,10 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombie.suicide.hotline",
-		version = "1.2.0.23",
+		version = "1.3.0.24",
 		SmodMajor = 3,
-		SmodMinor = 1,
-		SmodRevision = 31
+		SmodMinor = 2,
+		SmodRevision = 0
 		)]
 	class ZombieSuicideHotlinePlugin : Plugin
     {
