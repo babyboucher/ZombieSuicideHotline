@@ -144,52 +144,56 @@ namespace ZombieSuicideHotline.EventHandlers
 					plugin.Info("[OnPlayerDie] Adding player [" + ev.Player.IpAddress + "] from scp049Kills.");
 					this.plugin.scp049Kills.Add(ev.Player.IpAddress);
 				}
-				else if (ev.Player.TeamRole.Role == Role.SCP_049_2 && ev.DamageTypeVar == DamageType.FALLDOWN)
+				else if (ev.Player.TeamRole.Role == Role.SCP_049_2)
 				{
+					plugin.Info("SCP-049-2 died to " + ev.DamageTypeVar);
+					if (DamageType.NONE.Equals(ev.DamageTypeVar))
 					{
-						System.Timers.Timer t = new System.Timers.Timer
 						{
-							Interval = 1000,
-							AutoReset = false,
-							Enabled = true
-						};
-						t.Elapsed += delegate
+							System.Timers.Timer t = new System.Timers.Timer
+							{
+								Interval = 1000,
+								AutoReset = false,
+								Enabled = true
+							};
+							t.Elapsed += delegate
+							{
+								plugin.Info("[OnPlayerDie] SCP-049-2 [" + ev.Player.IpAddress + "] fell to his/her death, respawn as Chaos Insurgency.");
+								ev.Player.ChangeRole(Role.CHAOS_INSURGENCY);
+								t.Enabled = false;
+								t.Dispose();
+							};
+						}
 						{
-							plugin.Info("[OnPlayerDie] SCP-049-2 [" + ev.Player.IpAddress + "] fell to his/her death, respawn as Chaos Insurgency.");
-							ev.Player.ChangeRole(Role.CHAOS_INSURGENCY);
-							t.Enabled = false;
-							t.Dispose();
-						};
-					}
-					{
-						System.Timers.Timer t = new System.Timers.Timer
+							System.Timers.Timer t = new System.Timers.Timer
+							{
+								Interval = 2000,
+								AutoReset = false,
+								Enabled = true
+							};
+							t.Elapsed += delegate
+							{
+								plugin.Info("[OnPlayerDie] Killing player [" + ev.Player.IpAddress + "] as Chaos Insurgency.");
+								ev.Player.Kill();
+								t.Enabled = false;
+								t.Dispose();
+							};
+						}
 						{
-							Interval = 2000,
-							AutoReset = false,
-							Enabled = true
-						};
-						t.Elapsed += delegate
-						{
-							plugin.Info("[OnPlayerDie] Killing player [" + ev.Player.IpAddress + "] as Chaos Insurgency.");
-							ev.Player.Kill();
-							t.Enabled = false;
-							t.Dispose();
-						};
-					}
-					{
-						System.Timers.Timer t = new System.Timers.Timer
-						{
-							Interval = 3000,
-							AutoReset = false,
-							Enabled = true
-						};
-						t.Elapsed += delegate
-						{
-							plugin.Info("[OnPlayerDie] Respawning player [" + ev.Player.IpAddress + "] as SCP-049-2.");
-							ev.Player.ChangeRole(Role.SCP_049_2, true, true);
-							t.Enabled = false;
-							t.Dispose();
-						};
+							System.Timers.Timer t = new System.Timers.Timer
+							{
+								Interval = 3000,
+								AutoReset = false,
+								Enabled = true
+							};
+							t.Elapsed += delegate
+							{
+								plugin.Info("[OnPlayerDie] Respawning player [" + ev.Player.IpAddress + "] as SCP-049-2.");
+								ev.Player.ChangeRole(Role.SCP_049_2, true, true);
+								t.Enabled = false;
+								t.Dispose();
+							};
+						}
 					}
 				}
 			}
