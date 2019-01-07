@@ -147,7 +147,7 @@ namespace ZombieSuicideHotline.EventHandlers
 				else if (ev.Player.TeamRole.Role == Role.SCP_049_2)
 				{
 					plugin.Info("SCP-049-2 died to " + ev.DamageTypeVar);
-					if (DamageType.NONE.Equals(ev.DamageTypeVar))
+					if (DamageType.WALL.Equals(ev.DamageTypeVar))
 					{
 						{
 							System.Timers.Timer t = new System.Timers.Timer
