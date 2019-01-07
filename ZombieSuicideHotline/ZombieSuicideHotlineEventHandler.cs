@@ -40,7 +40,11 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnRoundEnd(RoundEndEvent ev)
 		{
-			this.plugin.duringRound = false;
+
+			if (ev.Round.Duration >= 3)
+			{
+				this.plugin.duringRound = false;
+			}
 		}
 	}
 
@@ -109,7 +113,7 @@ namespace ZombieSuicideHotline.EventHandlers
 			{
 				plugin.Debug("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
 				this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
-				ev.TeamRole = this.plugin.ClassList[Role.SCP_049-2];
+				ev.Role = Role.SCP_049;
 			}
 		}
 	}
@@ -131,13 +135,21 @@ namespace ZombieSuicideHotline.EventHandlers
 				this.plugin.scp049Kills.Add(ev.Player.IpAddress);
 				ev.SpawnRagdoll = true;
 			}
-			else if (ev.Player.TeamRole.Role == Role.SCP_106)
+			else if (ev.Player.TeamRole.Role == Role.SCP_049_2 && ev.DamageTypeVar == DamageType.FALLDOWN)
 			{
-				ev.SpawnRagdoll = false;
-			}
-			else
-			{
-				ev.SpawnRagdoll = true;
+				ev.Player.ChangeRole(Role.CHAOS_INSURGENCY);
+				System.Timers.Timer t = new System.Timers.Timer
+				{
+					Interval = 1000,
+					AutoReset = false,
+					Enabled = true
+				};
+				t.Elapsed += delegate
+				{
+					plugin.Debug("[OnPlayerDie] Respawning player [" + ev.Player.IpAddress + "] who fell to his/her death.");
+					ev.Player.Kill();
+					ev.Player.ChangeRole(Role.SCP_049_2, true, true);
+				};
 			}
 		}
 	}
@@ -153,15 +165,18 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnPlayerHurt(PlayerHurtEvent ev)
 		{
-			switch (ev.Player.TeamRole.Role)
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
 			{
-				case Role.SCP_049_2:
-					if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && ev.DamageType == DamageType.TESLA)
-					{
-						ev.DamageType = DamageType.NONE;
-						ev.Damage = 0f;
-					}
-					break;
+				switch (ev.Player.TeamRole.Role)
+				{
+					case Role.SCP_049_2:
+						if (ev.DamageType == DamageType.TESLA)
+						{
+							ev.DamageType = DamageType.NONE;
+							ev.Damage = 0f;
+						}
+						break;
+				}
 			}
 		}
 	}
