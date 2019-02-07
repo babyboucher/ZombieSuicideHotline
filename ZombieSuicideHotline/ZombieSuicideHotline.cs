@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombie.suicide.hotline",
-		version = "1.3.2.26",
+		version = "1.3.4.28",
 		SmodMajor = 3,
 		SmodMinor = 2,
 		SmodRevision = 0

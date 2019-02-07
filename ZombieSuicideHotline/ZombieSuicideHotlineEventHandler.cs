@@ -144,58 +144,14 @@ namespace ZombieSuicideHotline.EventHandlers
 					plugin.Info("[OnPlayerDie] Adding player [" + ev.Player.IpAddress + "] from scp049Kills.");
 					this.plugin.scp049Kills.Add(ev.Player.IpAddress);
 				}
-				else if (ev.Player.TeamRole.Role == Role.SCP_049_2)
+				/*else if (ev.Player.TeamRole.Role == Role.SCP_049_2)
 				{
 					plugin.Info("SCP-049-2 died to " + ev.DamageTypeVar);
 					if (DamageType.WALL.Equals(ev.DamageTypeVar))
 					{
-						{
-							System.Timers.Timer t = new System.Timers.Timer
-							{
-								Interval = 1000,
-								AutoReset = false,
-								Enabled = true
-							};
-							t.Elapsed += delegate
-							{
-								plugin.Info("[OnPlayerDie] SCP-049-2 [" + ev.Player.IpAddress + "] fell to his/her death, respawn as Chaos Insurgency.");
-								ev.Player.ChangeRole(Role.CHAOS_INSURGENCY);
-								t.Enabled = false;
-								t.Dispose();
-							};
-						}
-						{
-							System.Timers.Timer t = new System.Timers.Timer
-							{
-								Interval = 2000,
-								AutoReset = false,
-								Enabled = true
-							};
-							t.Elapsed += delegate
-							{
-								plugin.Info("[OnPlayerDie] Killing player [" + ev.Player.IpAddress + "] as Chaos Insurgency.");
-								ev.Player.Kill();
-								t.Enabled = false;
-								t.Dispose();
-							};
-						}
-						{
-							System.Timers.Timer t = new System.Timers.Timer
-							{
-								Interval = 3000,
-								AutoReset = false,
-								Enabled = true
-							};
-							t.Elapsed += delegate
-							{
-								plugin.Info("[OnPlayerDie] Respawning player [" + ev.Player.IpAddress + "] as SCP-049-2.");
-								ev.Player.ChangeRole(Role.SCP_049_2, true, true);
-								t.Enabled = false;
-								t.Dispose();
-							};
-						}
+						
 					}
-				}
+				}*/
 			}
 		}		
 	}
@@ -220,6 +176,39 @@ namespace ZombieSuicideHotline.EventHandlers
 						{
 							ev.DamageType = DamageType.NONE;
 							ev.Damage = 0f;
+						} else if (ev.DamageType == DamageType.WALL)
+						{
+							Player targetPlayer = null;
+							//TeamRole lastTeamRole = null;
+							foreach (Player player in this.plugin.Server.GetPlayers())
+							{
+								if (ev.Player.SteamId.Equals(player.SteamId))
+								{
+									continue;
+								}
+
+								if (targetPlayer == null)
+								{
+									targetPlayer = player;
+								}
+
+								if (ev.Player.TeamRole.Team == Team.SCP)
+								{
+									targetPlayer = player;
+								}
+
+								if (ev.Player.TeamRole.Role == Role.SCP_049)
+								{
+									targetPlayer = player;
+									break;
+								}
+							}
+
+							if (targetPlayer != null)
+							{
+								ev.Damage = 0;
+								ev.Player.Teleport(targetPlayer.GetPosition());
+							}
 						}
 						break;
 				}
