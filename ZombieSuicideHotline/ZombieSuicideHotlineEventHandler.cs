@@ -61,6 +61,7 @@ namespace ZombieSuicideHotline.EventHandlers
 		{
 			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
 			{
+				this.plugin.Info("[OnPlayerJoin] Waiting 30 seconds to respawn [" + ev.Player.IpAddress + "] as a zombie.");
 				if (this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
 				{
 					System.Timers.Timer t = new System.Timers.Timer
@@ -71,7 +72,7 @@ namespace ZombieSuicideHotline.EventHandlers
 					};
 					t.Elapsed += delegate
 					{
-						plugin.Info("[OnPlayerJoin] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
+						this.plugin.Info("[OnPlayerJoin] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
 						this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
 						ev.Player.ChangeRole(Role.SCP_049_2, true, true);
 					};
@@ -95,11 +96,30 @@ namespace ZombieSuicideHotline.EventHandlers
 			{
 				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Connection.IpAddress))
 				{
-					plugin.Info("[OnPlayerLeave] Removing player [" + ev.Connection.IpAddress + "] from scp049Kills.");
+					plugin.Info("[OnPlayerLeave] Removing player [" + ev.Connection.IpAddress + "] from scp049Kills after disconnecting.");
 					this.plugin.scp049Kills.Remove(ev.Connection.IpAddress);
-					plugin.Info("[OnPlayerLeave] Adding player [" + ev.Connection.IpAddress + "] to zombieDisconnects.");
+					plugin.Info("[OnPlayerLeave] Adding player [" + ev.Connection.IpAddress + "] to zombieDisconnects for leaving.");
 					this.plugin.zombieDisconnects.Add(ev.Connection.IpAddress);
 				}
+			}
+		}
+	}
+
+	class SpawnHandler : IEventHandlerSpawn
+	{
+		private ZombieSuicideHotlinePlugin plugin;
+
+		public SpawnHandler(Plugin plugin)
+		{
+			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
+		}
+
+		public void OnSpawn(PlayerSpawnEvent ev)
+		{
+			if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Player.IpAddress))
+			{
+				plugin.Info("[OnPlayerLeave] Removing player [" + ev.Player.IpAddress + "] from scp049Kills for spawning in.");
+				this.plugin.scp049Kills.Remove(ev.Player.IpAddress);
 			}
 		}
 	}
@@ -121,7 +141,7 @@ namespace ZombieSuicideHotline.EventHandlers
 				{
 					plugin.Debug("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
 					this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
-					ev.Role = Role.SCP_049;
+					ev.Role = Role.SCP_049_2;
 				}
 			}
 		}
@@ -172,43 +192,49 @@ namespace ZombieSuicideHotline.EventHandlers
 				switch (ev.Player.TeamRole.Role)
 				{
 					case Role.SCP_049_2:
-						if (ev.DamageType == DamageType.TESLA)
+						switch (ev.DamageType)
 						{
-							ev.DamageType = DamageType.NONE;
-							ev.Damage = 0f;
-						} else if (ev.DamageType == DamageType.WALL)
-						{
-							Player targetPlayer = null;
-							//TeamRole lastTeamRole = null;
-							foreach (Player player in this.plugin.Server.GetPlayers())
-							{
-								if (ev.Player.SteamId.Equals(player.SteamId))
+							case DamageType.TESLA:
+								//ev.DamageType = DamageType.NONE;
+								//ev.Damage = 0f;
+							case DamageType.WALL:
+								Player targetPlayer = null;
+								//TeamRole lastTeamRole = null;
+								foreach (Player player in this.plugin.Server.GetPlayers())
 								{
-									continue;
+									if (ev.Player.SteamId.Equals(player.SteamId))
+									{
+										continue;
+									}
+
+									if (player.TeamRole.Role == Role.SCP_079)
+									{
+										continue;
+									}
+
+									if (targetPlayer == null)
+									{
+										targetPlayer = player;
+									}
+
+									if (player.TeamRole.Team == Team.SCP)
+									{
+										targetPlayer = player;
+									}
+
+									if (player.TeamRole.Role == Role.SCP_049)
+									{
+										targetPlayer = player;
+										break;
+									}
 								}
 
-								if (targetPlayer == null)
+								if (targetPlayer != null)
 								{
-									targetPlayer = player;
+									ev.Damage = 0;
+									ev.Player.Teleport(targetPlayer.GetPosition());
 								}
-
-								if (ev.Player.TeamRole.Team == Team.SCP)
-								{
-									targetPlayer = player;
-								}
-
-								if (ev.Player.TeamRole.Role == Role.SCP_049)
-								{
-									targetPlayer = player;
-									break;
-								}
-							}
-
-							if (targetPlayer != null)
-							{
-								ev.Damage = 0;
-								ev.Player.Teleport(targetPlayer.GetPosition());
-							}
+								break;
 						}
 						break;
 				}
