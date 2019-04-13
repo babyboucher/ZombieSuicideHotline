@@ -2,6 +2,8 @@
 using Smod2.API;
 using Smod2.Events;
 using Smod2.EventHandlers;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace ZombieSuicideHotline.EventHandlers
 {
@@ -268,6 +270,61 @@ namespace ZombieSuicideHotline.EventHandlers
 						ev.Player.Teleport(targetPlayer.GetPosition());
 					}
 				}
+			}
+		}
+	}
+
+	class CallCommandHandler : IEventHandlerCallCommand
+	{
+		private ZombieSuicideHotlinePlugin plugin;
+
+		public CallCommandHandler(Plugin plugin)
+		{
+			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
+		}
+
+		public void OnCallCommand(PlayerCallCommandEvent ev)
+		{
+			string command = ev.Command.Split(' ')[0];
+			string[] quotedArgs = Regex.Matches(ev.Command, "[^\\s\"\']+|\"([^\"]*)\"|\'([^\']*)\'")
+				.Cast<Match>()
+				.Select(m => m.Value)
+				.ToArray()
+				.Skip(1)
+				.ToArray();
+
+			switch (command)
+			{
+				case "recall":
+					if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
+					{
+						if (ev.Player.TeamRole.Role == Role.SCP_049)
+						{
+							bool zombiesFound = false;
+							foreach (Player checkZombie in this.plugin.Server.GetPlayers())
+							{
+								if (checkZombie.TeamRole.Role == Role.SCP_049_2)
+								{
+									ev.Player.Teleport(checkZombie.GetPosition(), true);
+									zombiesFound = true;
+								}
+							}
+
+							if (zombiesFound)
+							{
+								ev.ReturnMessage = "All of your SCP-049-2 have been teleported to you.";
+							}
+							else
+							{
+								ev.ReturnMessage = "You have no SCP-049-2 alive right now.";
+							}
+						}
+					}
+					else
+					{
+						ev.ReturnMessage = "Zombie Suicide Hotline is currently disabled.";
+					}
+					break;
 			}
 		}
 	}
