@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombie.suicide.hotline",
-		version = "1.3.10.34",
+		version = "1.3.11.35",
 		SmodMajor = 3,
 		SmodMinor = 2,
 		SmodRevision = 0
@@ -23,11 +23,12 @@ namespace ZombieSuicideHotline
 		internal bool duringRound = false;
 		internal HashSet<string> scp049Kills = new HashSet<string>();
 		internal HashSet<string> zombieDisconnects = new HashSet<string>();
+		internal int lastRecall = 0;
 
 		public override void OnEnable()
         {
             this.Info("Zombie Suicide Hotline has loaded :)");
-            this.Info("Config value: " + this.GetConfigBool("zombie_suicide_hotline_enabled"));
+            this.Info("Config vale: " + this.GetConfigBool("zombie_suicide_hotline_enabled"));
         }
 
         public override void OnDisable()

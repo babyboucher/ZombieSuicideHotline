@@ -21,6 +21,7 @@ namespace ZombieSuicideHotline.EventHandlers
 			this.plugin.duringRound = true;
 			this.plugin.scp049Kills = new System.Collections.Generic.HashSet<string>();
 			//this.plugin.zombieDisconnects = new System.Collections.Generic.HashSet<string>();
+			this.plugin.lastRecall = 0;
 		}
 	}
 
@@ -69,19 +70,19 @@ namespace ZombieSuicideHotline.EventHandlers
 		{
 			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
 			{
-				if (this.plugin.duringRound && ev.Killer.TeamRole.Role == Role.SCP_049)
+				if (this.plugin.duringRound)
 				{
-					this.plugin.Info("[OnPlayerDie] Adding player [" + ev.Player.IpAddress + "] from scp049Kills.");
-					this.plugin.scp049Kills.Add(ev.Player.IpAddress);
-				}
-				/*else if (ev.Player.TeamRole.Role == Role.SCP_049_2)
-				{
-					plugin.Info("SCP-049-2 died to " + ev.DamageTypeVar);
-					if (DamageType.WALL.Equals(ev.DamageTypeVar))
+					if (ev.Killer.TeamRole.Role == Role.SCP_049)
 					{
-						
+						this.plugin.Info("[OnPlayerDie] Adding player [" + ev.Player.IpAddress + "] from scp049Kills.");
+						this.plugin.scp049Kills.Add(ev.Player.IpAddress);
 					}
-				}*/
+					else if (ev.Player.TeamRole.Role == Role.SCP_049_2 && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
+					{
+						plugin.Info("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects for dying as a zombie.");
+						this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+					}
+				}
 			}
 		}
 	}
@@ -151,9 +152,10 @@ namespace ZombieSuicideHotline.EventHandlers
 
 				if (this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
 				{
-					plugin.Info("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
-					this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
-					ev.Role = Role.SCP_049_2;
+					//plugin.Info("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
+					//this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+					this.plugin.Info("[OnSetRole] Force spawning disconnecting player " + ev.Player.Name + " as zombie...");
+					ev.Player.ChangeRole(Role.SCP_049_2);
 				}
 			}
 		}
@@ -300,23 +302,31 @@ namespace ZombieSuicideHotline.EventHandlers
 					{
 						if (ev.Player.TeamRole.Role == Role.SCP_049)
 						{
-							bool zombiesFound = false;
-							foreach (Player checkZombie in this.plugin.Server.GetPlayers())
+							if (this.plugin.lastRecall == 0 || this.plugin.lastRecall + 15 <= this.plugin.Server.Round.Duration)
 							{
-								if (checkZombie.TeamRole.Role == Role.SCP_049_2)
+								bool zombiesFound = false;
+								foreach (Player checkZombie in this.plugin.Server.GetPlayers())
 								{
-									checkZombie.Teleport(ev.Player.GetPosition(), true);
-									zombiesFound = true;
+									if (checkZombie.TeamRole.Role == Role.SCP_049_2)
+									{
+										checkZombie.Teleport(ev.Player.GetPosition(), true);
+										zombiesFound = true;
+									}
 								}
-							}
 
-							if (zombiesFound)
-							{
-								ev.ReturnMessage = "All of your SCP-049-2 have been teleported to you.";
+								if (zombiesFound)
+								{
+									ev.ReturnMessage = "All of your SCP-049-2 have been teleported to you.";
+									this.plugin.lastRecall = this.plugin.Server.Round.Duration;
+								}
+								else
+								{
+									ev.ReturnMessage = "You have no SCP-049-2 alive right now.";
+								}
 							}
 							else
 							{
-								ev.ReturnMessage = "You have no SCP-049-2 alive right now.";
+								ev.ReturnMessage = "You must wait " + ((this.plugin.lastRecall + 15) - this.plugin.Server.Round.Duration) + " seconds before using .recall again.";
 							}
 						}
 						else
