@@ -102,7 +102,7 @@ namespace ZombieSuicideHotline.EventHandlers
 		{
 			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
 			{
-				if (ev.Player.TeamRole.Role == Role.SCP_049_2)
+				/*if (ev.Player.TeamRole.Role == Role.SCP_049_2)
 				{
 					foreach (Player scp049 in this.plugin.Server.GetPlayers())
 					{
@@ -111,7 +111,7 @@ namespace ZombieSuicideHotline.EventHandlers
 							ev.Player.Teleport(scp049.GetPosition(), true);
 						}
 					}
-				}
+				}*/
 
 				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Player.IpAddress))
 				{
@@ -138,7 +138,7 @@ namespace ZombieSuicideHotline.EventHandlers
 		{
 			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
 			{
-				if (ev.Player.TeamRole.Role == Role.SCP_049_2)
+				/*if (ev.Player.TeamRole.Role == Role.SCP_049_2)
 				{
 					foreach (Player scp049 in this.plugin.Server.GetPlayers())
 					{
@@ -147,7 +147,7 @@ namespace ZombieSuicideHotline.EventHandlers
 							ev.Player.Teleport(scp049.GetPosition(), true);
 						}
 					}
-				}
+				}*/
 
 				if (this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
 				{
@@ -305,7 +305,7 @@ namespace ZombieSuicideHotline.EventHandlers
 							{
 								if (checkZombie.TeamRole.Role == Role.SCP_049_2)
 								{
-									ev.Player.Teleport(checkZombie.GetPosition(), true);
+									checkZombie.Teleport(ev.Player.GetPosition(), true);
 									zombiesFound = true;
 								}
 							}
@@ -318,6 +318,10 @@ namespace ZombieSuicideHotline.EventHandlers
 							{
 								ev.ReturnMessage = "You have no SCP-049-2 alive right now.";
 							}
+						}
+						else
+						{
+							ev.ReturnMessage = "You cannot recall zombies unless you are SCP-049.";
 						}
 					}
 					else
