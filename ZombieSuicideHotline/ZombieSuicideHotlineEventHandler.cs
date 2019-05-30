@@ -4,6 +4,7 @@ using Smod2.Events;
 using Smod2.EventHandlers;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Smod2.EventSystem.Events;
 
 namespace ZombieSuicideHotline.EventHandlers
 {
@@ -114,12 +115,38 @@ namespace ZombieSuicideHotline.EventHandlers
 					}
 				}*/
 
-				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Player.IpAddress))
+				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Player.IpAddress) && ev.Player.TeamRole.Role == Role.SCP_049_2)
 				{
-					plugin.Info("[OnPlayerLeave] Removing player [" + ev.Player.IpAddress + "] from scp049Kills for spawning in.");
+					plugin.Info("[OnPlayerLeave] Removing player [" + ev.Player.IpAddress + "] from scp049Kills for spawning in as " + Role.SCP_049_2 + ".");
 					this.plugin.scp049Kills.Remove(ev.Player.IpAddress);
 				}
 			}
+		}
+	}
+
+	/**
+	 * 2a
+	 */
+	class TeamRespawnHandler : IEventHandlerTeamRespawn
+	{
+		private ZombieSuicideHotlinePlugin plugin;
+
+		public TeamRespawnHandler(Plugin plugin)
+		{
+			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
+		}
+
+		public void OnTeamRespawn(TeamRespawnEvent ev)
+		{
+			foreach (Player player in ev.PlayerList)
+			{
+				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(player.IpAddress))
+				{
+					plugin.Info("[OnPlayerLeave] Removing player [" + player.IpAddress + "] from scp049Kills for spawning in as " + player.TeamRole.Role + ".");
+					this.plugin.scp049Kills.Remove(player.IpAddress);
+				}
+			}
+			
 		}
 	}
 

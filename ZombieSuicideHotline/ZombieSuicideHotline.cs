@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombie.suicide.hotline",
-		version = "1.3.11.35",
+		version = "1.3.12.36",
 		SmodMajor = 3,
 		SmodMinor = 2,
 		SmodRevision = 0
@@ -45,6 +45,7 @@ namespace ZombieSuicideHotline
 			this.AddEventHandler(typeof(IEventHandlerDisconnect), new DisconnectHandler(this), Priority.Normal);
 			this.AddEventHandler(typeof(IEventHandlerSpawn), new SpawnHandler(this), Priority.Highest);
 			this.AddEventHandler(typeof(IEventHandlerSetRole), new SetRoleHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventHandlerTeamRespawn), new TeamRespawnHandler(this), Priority.Highest);
 			this.AddEventHandler(typeof(IEventHandlerPlayerDie), new PlayerDieHandler(this), Priority.Normal);
 			this.AddEventHandler(typeof(IEventHandlerPlayerHurt), new PlayerHurtHandler(this), Priority.Normal);
 			this.AddEventHandler(typeof(IEventHandlerCallCommand), new CallCommandHandler(this), Priority.Normal);
