@@ -67,7 +67,7 @@ namespace ZombieSuicideHotline.EventHandlers
 			{
 				this.plugin.zombies[ev.Player.SteamId] = new Zombie(player.PlayerId, player.Name, player.SteamId, player.IpAddress);
 			}
-			else
+			/*else
 			{
 				if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.zombies[ev.Player.SteamId].Undead)
 				{
@@ -81,7 +81,7 @@ namespace ZombieSuicideHotline.EventHandlers
 						counter++;
 					} while (ev.Player.TeamRole.Role != Role.SCP_049_2 && counter < 5);
 				}
-			}
+			}*/
 		}
 	}
 
