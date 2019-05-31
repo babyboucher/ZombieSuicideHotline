@@ -5,6 +5,7 @@ using Smod2.EventHandlers;
 using System.Text.RegularExpressions;
 using System.Linq;
 using Smod2.EventSystem.Events;
+using System.Collections.Generic;
 
 namespace ZombieSuicideHotline.EventHandlers
 {
@@ -20,7 +21,8 @@ namespace ZombieSuicideHotline.EventHandlers
 		public void OnRoundStart(RoundStartEvent ev)
 		{
 			this.plugin.duringRound = true;
-			this.plugin.scp049Kills = new System.Collections.Generic.HashSet<string>();
+			this.plugin.zombies = new Dictionary<string, Zombie>();
+			//this.plugin.scp049Kills = new System.Collections.Generic.HashSet<string>();
 			//this.plugin.zombieDisconnects = new System.Collections.Generic.HashSet<string>();
 			this.plugin.lastRecall = 0;
 		}
@@ -41,6 +43,44 @@ namespace ZombieSuicideHotline.EventHandlers
 			if (ev.Round.Duration >= 3)
 			{
 				this.plugin.duringRound = false;
+				this.plugin.zombies = new Dictionary<string, Zombie>();
+			}
+		}
+	}
+
+	/**
+	 * 3
+	 */
+	class PlayerJoinHandler : IEventHandlerPlayerJoin
+	{
+		private ZombieSuicideHotlinePlugin plugin;
+
+		public PlayerJoinHandler(Plugin plugin)
+		{
+			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
+		}
+
+		public void OnPlayerJoin(PlayerJoinEvent ev)
+		{
+			Player player = ev.Player;
+			if (!this.plugin.zombies.ContainsKey(ev.Player.SteamId))
+			{
+				this.plugin.zombies[ev.Player.SteamId] = new Zombie(player.PlayerId, player.Name, player.SteamId, player.IpAddress);
+			}
+			else
+			{
+				if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.zombies[ev.Player.SteamId].Undead)
+				{
+					//this.plugin.Info("[OnPlayerJoin] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
+					//this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+					int counter = 0;
+					do
+					{
+						this.plugin.Info("[OnPlayerJoin] Making " + counter + " attempt(s) to respawn " + ev.Player.Name + " [" + ev.Player.SteamId + "] as a zombie.");
+						ev.Player.ChangeRole(Role.SCP_049_2, true, true);
+						counter++;
+					} while (ev.Player.TeamRole.Role != Role.SCP_049_2 && counter < 5);
+				}
 			}
 		}
 	}
@@ -54,7 +94,7 @@ namespace ZombieSuicideHotline.EventHandlers
 	 * 3.  If the player reconnects to the server, attempt to respawn the
 	 *     player as SCP-049-2.
 	 */
-	
+
 	/**
 	 * 1
 	 */
@@ -69,19 +109,35 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnPlayerDie(PlayerDeathEvent ev)
 		{
-			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound)
 			{
-				if (this.plugin.duringRound)
+				Player player = ev.Player;
+				if (ev.Killer.TeamRole.Role == Role.SCP_049)
 				{
-					if (ev.Killer.TeamRole.Role == Role.SCP_049)
+					this.plugin.Info("[OnPlayerDie] Adding player " + player.Name + " [" + ev.Player.SteamId + "] to scp049Kills.");
+					//this.plugin.scp049Kills.Add(ev.Player.IpAddress);
+					if (this.plugin.zombies.ContainsKey(player.SteamId))
 					{
-						this.plugin.Info("[OnPlayerDie] Adding player [" + ev.Player.IpAddress + "] from scp049Kills.");
-						this.plugin.scp049Kills.Add(ev.Player.IpAddress);
+						this.plugin.zombies[player.SteamId].Undead = true;
 					}
-					else if (ev.Player.TeamRole.Role == Role.SCP_049_2 && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
+					else
 					{
-						plugin.Info("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects for dying as a zombie.");
-						this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+						this.plugin.zombies[player.SteamId] = new Zombie(player.PlayerId, player.Name, player.SteamId, player.IpAddress);
+						this.plugin.zombies[player.SteamId].Undead = true;
+					}
+				}
+				else if (ev.Player.TeamRole.Role == Role.SCP_049_2)
+				{
+					this.plugin.Info("[OnSetClass] Removing player " + player.Name + "[" + ev.Player.SteamId + "] from zombieDisconnects for dying as a zombie.");
+					//this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+					if (this.plugin.zombies.ContainsKey(player.SteamId))
+					{
+						this.plugin.zombies[player.SteamId].Undead = false;
+					}
+					else
+					{
+						this.plugin.zombies[player.SteamId] = new Zombie(player.PlayerId, player.Name, player.SteamId, player.IpAddress);
+						this.plugin.zombies[player.SteamId].Undead = false;
 					}
 				}
 			}
@@ -102,24 +158,38 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnSpawn(PlayerSpawnEvent ev)
 		{
-			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
+			Player player = ev.Player;
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.zombies.ContainsKey(player.SteamId) && this.plugin.zombies[player.SteamId].Undead && player.TeamRole.Role != Role.SCP_049_2)
 			{
-				/*if (ev.Player.TeamRole.Role == Role.SCP_049_2)
-				{
-					foreach (Player scp049 in this.plugin.Server.GetPlayers())
-					{
-						if (scp049.TeamRole.Role == Role.SCP_049)
-						{
-							ev.Player.Teleport(scp049.GetPosition(), true);
-						}
-					}
-				}*/
+				//plugin.Info("[OnPlayerLeave] Removing player [" + ev.Player.IpAddress + "] from scp049Kills for spawning in as " + Role.SCP_049_2 + ".");
+				//this.plugin.scp049Kills.Remove(ev.Player.IpAddress);
+				this.plugin.Info("[OnSpawn] Force spawning disconnecting player " + player.Name + " [" + player.SteamId + "] as zombie...");
+				ev.Player.ChangeRole(Role.SCP_049_2);
+			}
+		}
+	}
 
-				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Player.IpAddress) && ev.Player.TeamRole.Role == Role.SCP_049_2)
-				{
-					plugin.Info("[OnPlayerLeave] Removing player [" + ev.Player.IpAddress + "] from scp049Kills for spawning in as " + Role.SCP_049_2 + ".");
-					this.plugin.scp049Kills.Remove(ev.Player.IpAddress);
-				}
+	/**
+	 * 2a
+	 */
+	class SetRoleHandler : IEventHandlerSetRole
+	{
+		private ZombieSuicideHotlinePlugin plugin;
+
+		public SetRoleHandler(Plugin plugin)
+		{
+			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
+		}
+
+		public void OnSetRole(PlayerSetRoleEvent ev)
+		{
+			Player player = ev.Player;
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && this.plugin.zombies.ContainsKey(player.SteamId) && this.plugin.zombies[player.SteamId].Undead && ev.Role != Role.SCP_049_2)
+			{
+				//this.plugin.Info("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
+				//this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
+				this.plugin.Info("[OnSetRole] Force spawning disconnecting player " + player.Name + " [" + player.SteamId + "] as zombie...");
+				ev.Player.ChangeRole(Role.SCP_049_2);
 			}
 		}
 	}
@@ -140,58 +210,22 @@ namespace ZombieSuicideHotline.EventHandlers
 		{
 			foreach (Player player in ev.PlayerList)
 			{
-				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(player.IpAddress))
+				if (this.plugin.duringRound && this.plugin.zombies.ContainsKey(player.SteamId) && this.plugin.zombies[player.SteamId].Undead)
 				{
-					plugin.Info("[OnPlayerLeave] Removing player [" + player.IpAddress + "] from scp049Kills for spawning in as " + player.TeamRole.Role + ".");
-					this.plugin.scp049Kills.Remove(player.IpAddress);
+					//this.plugin.Info("[OnPlayerLeave] Removing player [" + player.IpAddress + "] from scp049Kills for spawning in as " + player.TeamRole.Role + ".");
+					//this.plugin.scp049Kills.Remove(player.IpAddress);
+					this.plugin.Info("[OnTeamRespawn] Force spawning disconnecting player " + player.Name + " [" + player.SteamId + "] as zombie...");
+					player.ChangeRole(Role.SCP_049_2);
 				}
 			}
-			
-		}
-	}
 
-	/**
-	 * 2a
-	 */
-	class SetRoleHandler : IEventHandlerSetRole
-	{
-		private ZombieSuicideHotlinePlugin plugin;
-
-		public SetRoleHandler(Plugin plugin)
-		{
-			this.plugin = (ZombieSuicideHotlinePlugin)plugin;
-		}
-
-		public void OnSetRole(PlayerSetRoleEvent ev)
-		{
-			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
-			{
-				/*if (ev.Player.TeamRole.Role == Role.SCP_049_2)
-				{
-					foreach (Player scp049 in this.plugin.Server.GetPlayers())
-					{
-						if (scp049.TeamRole.Role == Role.SCP_049)
-						{
-							ev.Player.Teleport(scp049.GetPosition(), true);
-						}
-					}
-				}*/
-
-				if (this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
-				{
-					//plugin.Info("[OnSetClass] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
-					//this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
-					this.plugin.Info("[OnSetRole] Force spawning disconnecting player " + ev.Player.Name + " as zombie...");
-					ev.Player.ChangeRole(Role.SCP_049_2);
-				}
-			}
 		}
 	}
 
 	/**
 	 * 2b
 	 */
-	class DisconnectHandler : IEventHandlerDisconnect
+	/*class DisconnectHandler : IEventHandlerDisconnect
 	{
 		private ZombieSuicideHotlinePlugin plugin;
 
@@ -202,9 +236,13 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnDisconnect(DisconnectEvent ev)
 		{
-			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound)
 			{
-				if (this.plugin.duringRound && this.plugin.scp049Kills.Contains(ev.Connection.IpAddress))
+				this.plugin.ProcessingDisconnect = true;
+
+				List<Zombie> disconnectedUsers = this.plugin.zombies.Values.Where(tker => !this.plugin.Server.GetPlayers().Any(p => tker.SteamId == p.SteamId)).ToList();
+
+				foreach (Zombie z in disconnectedUsers)
 				{
 					plugin.Info("[OnPlayerLeave] Removing player [" + ev.Connection.IpAddress + "] from scp049Kills after disconnecting.");
 					this.plugin.scp049Kills.Remove(ev.Connection.IpAddress);
@@ -213,39 +251,7 @@ namespace ZombieSuicideHotline.EventHandlers
 				}
 			}
 		}
-	}
-
-	/**
-	 * 3
-	 */
-	class PlayerJoinHandler : IEventHandlerPlayerJoin
-	{
-		private ZombieSuicideHotlinePlugin plugin;
-
-		public PlayerJoinHandler(Plugin plugin)
-		{
-			this.plugin = (ZombieSuicideHotlinePlugin) plugin;
-		}
-
-		public void OnPlayerJoin(PlayerJoinEvent ev)
-		{
-			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled"))
-			{
-				if (this.plugin.duringRound && this.plugin.zombieDisconnects.Contains(ev.Player.IpAddress))
-				{
-					this.plugin.Info("[OnPlayerJoin] Removing player [" + ev.Player.IpAddress + "] from zombieDisconnects.");
-					this.plugin.zombieDisconnects.Remove(ev.Player.IpAddress);
-					int counter = 0;
-					do
-					{
-						this.plugin.Info("[OnPlayerJoin] Making " + counter + " attempt(s) to respawn [" + ev.Player.IpAddress + "] as a zombie.");
-						ev.Player.ChangeRole(Role.SCP_049_2, true, true);
-						counter++;
-					} while (ev.Player.TeamRole.Role != Role.SCP_049_2 && counter < 5);
-				}
-			}
-		}
-	}
+	}*/
 
 	class PlayerHurtHandler : IEventHandlerPlayerHurt
 	{
