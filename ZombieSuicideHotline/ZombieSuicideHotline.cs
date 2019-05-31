@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombie.suicide.hotline",
-		version = "1.5.1.40",
+		version = "1.5.2.41",
 		SmodMajor = 3,
 		SmodMinor = 2,
 		SmodRevision = 0
@@ -24,7 +24,7 @@ namespace ZombieSuicideHotline
 		//internal HashSet<string> scp049Kills = new HashSet<string>();
 		//internal HashSet<string> zombieDisconnects = new HashSet<string>();
 		internal int lastRecall = 0;
-		//internal bool ProcessingDisconnect = false;
+		internal bool ProcessingDisconnect = false;
 
 		internal Dictionary<string, Zombie> zombies = new Dictionary<string, Zombie>();
 
@@ -45,7 +45,7 @@ namespace ZombieSuicideHotline
             this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerRoundEnd), new RoundEndHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new PlayerJoinHandler(this), Priority.Lowest);
-			this.AddEventHandler(typeof(IEventHandlerDisconnect), new DisconnectHandler(this), Priority.Highest);
+			this.AddEventHandler(typeof(IEventHandlerDisconnect), new DisconnectHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerSpawn), new SpawnHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerSetRole), new SetRoleHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerTeamRespawn), new TeamRespawnHandler(this), Priority.Lowest);

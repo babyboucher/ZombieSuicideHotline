@@ -267,9 +267,9 @@ namespace ZombieSuicideHotline.EventHandlers
 
 		public void OnDisconnect(DisconnectEvent ev)
 		{
-			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled")) // && this.plugin.duringRound
+			if (this.plugin.GetConfigBool("zombie_suicide_hotline_enabled") && this.plugin.duringRound && !this.plugin.ProcessingDisconnect)
 			{
-				//this.plugin.ProcessingDisconnect = true;
+				this.plugin.ProcessingDisconnect = true;
 
 				List<Zombie> disconnectedUsers = this.plugin.zombies.Values.Where(zombie => !this.plugin.Server.GetPlayers().Any(p => zombie.SteamId == p.SteamId)).ToList();
 				this.plugin.Info("[OnDisconnect] Found a total of " + disconnectedUsers.Count + " disconnected users.");
@@ -293,7 +293,7 @@ namespace ZombieSuicideHotline.EventHandlers
 					//this.plugin.zombieDisconnects.Add(ev.Connection.IpAddress);
 				}
 
-				//this.plugin.ProcessingDisconnect = false;
+				this.plugin.ProcessingDisconnect = false;
 			}
 		}
 	}
