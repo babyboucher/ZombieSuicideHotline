@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
 		name = "ZombieSuicideHotline",
 		description = "Respawns zombies that intentionally kill themselves.",
 		id = "patpeter.zombie.suicide.hotline",
-		version = "1.5.2.41",
+		version = "1.5.4.43",
 		SmodMajor = 3,
 		SmodMinor = 2,
 		SmodRevision = 0
@@ -45,8 +45,8 @@ namespace ZombieSuicideHotline
             this.AddEventHandler(typeof(IEventHandlerRoundStart), new RoundStartHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerRoundEnd), new RoundEndHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerPlayerJoin), new PlayerJoinHandler(this), Priority.Lowest);
-			this.AddEventHandler(typeof(IEventHandlerDisconnect), new DisconnectHandler(this), Priority.Lowest);
-			this.AddEventHandler(typeof(IEventHandlerSpawn), new SpawnHandler(this), Priority.Lowest);
+			this.AddEventHandler(typeof(IEventHandlerDisconnect), new DisconnectHandler(this), Priority.Highest);
+			//this.AddEventHandler(typeof(IEventHandlerSpawn), new SpawnHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerSetRole), new SetRoleHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerTeamRespawn), new TeamRespawnHandler(this), Priority.Lowest);
 			this.AddEventHandler(typeof(IEventHandlerPlayerDie), new PlayerDieHandler(this), Priority.Lowest);
@@ -112,6 +112,12 @@ namespace ZombieSuicideHotline
 			this.Name = name;
 			this.SteamId = steamId;
 			this.IpAddress = ipAddress;
+		}
+
+		
+		public override string ToString()
+		{
+			return "[ PlayerId: " + PlayerId + ", Name: " + Name + ", SteamID: " + SteamId + ", IpAddress: " + IpAddress + ", LastRecall: " + LastRecall + ", Undead: " + Undead + ", Disconnected: " + Disconnected + ", Zombies Size: " + Zombies.Count + " ]";
 		}
 	}
 }
