@@ -273,40 +273,67 @@ namespace ZombieSuicideHotline.EventHandlers
 			{
 				this.plugin.ProcessingDisconnect = true;
 
-				this.plugin.Info("[OnDisconnect] Player List: ");
-				for (int i = 0; i < this.plugin.Server.GetPlayers().Count; i++)
+				if (ev.Connection.IpAddress != null && !"".Equals(ev.Connection.IpAddress))
 				{
-					this.plugin.Info("[OnDisconnect] Player " + i + ": " + this.plugin.Server.GetPlayers()[i]);
-				}
+					// Users on LAN can have the same IP address
+					List<Zombie> disconnectedIpAddresses = this.plugin.zombies.Values.Where(zombie => zombie.IpAddress.Equals(ev.Connection.IpAddress)).ToList();
+					//if (disconnectedIpAddresses.Count > 0)
+					//{
+					//	this.plugin.Info("[OnDisconnect] Found a total of " + disconnectedIpAddresses.Count + " disconnected IP addresses.");
+					//}
 
-				this.plugin.Info("[OnDisconnect] Zombie List: ");
-				int counter = 0;
-				foreach (Zombie zombie in this.plugin.zombies.Values)
-				{
-					this.plugin.Info("[OnDisconnect] Zombie " + counter + ": " + zombie);
-					counter++;
-				}
-
-				List<Zombie> disconnectedUsers = this.plugin.zombies.Values.Where(zombie => !this.plugin.Server.GetPlayers().Any(p => zombie.SteamId == p.SteamId)).ToList();
-				this.plugin.Info("[OnDisconnect] Found a total of " + disconnectedUsers.Count + " disconnected users.");
-
-				foreach (Zombie z in disconnectedUsers)
-				{
-					if (z.Undead)
+					foreach (Zombie z in disconnectedIpAddresses)
 					{
-						this.plugin.Info("[OnDisconnect] Removing player " + z.Name + " [" + z.SteamId + "] from scp049Kills after disconnecting.");
-						z.Undead = false;
-						this.plugin.Info("[OnDisconnect] Adding player " + z.Name + " [" + z.SteamId + "] to zombieDisconnects for leaving.");
-						z.Disconnected = true;
+						if (z.Undead)
+						{
+							z.Undead = false;
+							z.Disconnected = true;
+							this.plugin.Info("[OnDisconnect] Found disconnected IP address belonging to " + z.Name + " [" + z.IpAddress + "] and set disconnect flag.");
+						}
 					}
-					else
+				}
+				else
+				{
+
+					/*this.plugin.Info("[OnDisconnect] Player List: ");
+					for (int i = 0; i < this.plugin.Server.GetPlayers().Count; i++)
 					{
-						this.plugin.Info("[OnDisconnect] Player " + z.Name + " [" + z.SteamId + "] was not killed by SCP-049. Do nothing.");
+						this.plugin.Info("[OnDisconnect] Player " + i + ": " + this.plugin.Server.GetPlayers()[i]);
 					}
-					//plugin.Info("[OnPlayerLeave] Removing player [" + ev.Connection.IpAddress + "] from scp049Kills after disconnecting.");
-					//this.plugin.scp049Kills.Remove(ev.Connection.IpAddress);
-					//plugin.Info("[OnPlayerLeave] Adding player [" + ev.Connection.IpAddress + "] to zombieDisconnects for leaving.");
-					//this.plugin.zombieDisconnects.Add(ev.Connection.IpAddress);
+
+					this.plugin.Info("[OnDisconnect] Zombie List: ");
+					int counter = 0;
+					foreach (Zombie zombie in this.plugin.zombies.Values)
+					{
+						this.plugin.Info("[OnDisconnect] Zombie " + counter + ": " + zombie);
+						counter++;
+					}*/
+
+					List<Zombie> disconnectedUsers = this.plugin.zombies.Values.Where(zombie => !this.plugin.Server.GetPlayers().Any(p => zombie.SteamId == p.SteamId)).ToList();
+					//if (disconnectedUsers.Count > 0)
+					//{
+					//	this.plugin.Info("[OnDisconnect] Found a total of " + disconnectedUsers.Count + " disconnected users.");
+					//}
+
+					foreach (Zombie z in disconnectedUsers)
+					{
+						if (z.Undead)
+						{
+							//this.plugin.Info("[OnDisconnect] Removing player " + z.Name + " [" + z.SteamId + "] from scp049Kills after disconnecting.");
+							z.Undead = false;
+							//this.plugin.Info("[OnDisconnect] Adding player " + z.Name + " [" + z.SteamId + "] to zombieDisconnects for leaving.");
+							z.Disconnected = true;
+							this.plugin.Info("[OnDisconnect] Found disconnected user " + z.Name + " [" + z.SteamId + "] and set disconnect flag.");
+						}
+						//else
+						//{
+						//	this.plugin.Info("[OnDisconnect] Player " + z.Name + " [" + z.SteamId + "] was not killed by SCP-049. Do nothing.");
+						//}
+						//plugin.Info("[OnPlayerLeave] Removing player [" + ev.Connection.IpAddress + "] from scp049Kills after disconnecting.");
+						//this.plugin.scp049Kills.Remove(ev.Connection.IpAddress);
+						//plugin.Info("[OnPlayerLeave] Adding player [" + ev.Connection.IpAddress + "] to zombieDisconnects for leaving.");
+						//this.plugin.zombieDisconnects.Add(ev.Connection.IpAddress);
+					}
 				}
 
 				this.plugin.ProcessingDisconnect = false;
