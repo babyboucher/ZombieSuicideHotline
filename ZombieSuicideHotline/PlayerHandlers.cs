@@ -11,26 +11,41 @@
 
         public void OnPlayerJoined(JoinedEventArgs ev)
         {
-            Log.Info($"PlayerJoin ran");
             Player player = ev.Player;
             if (!this.plugin.zombies.ContainsKey(ev.Player.UserId))
             {
                 this.plugin.zombies[ev.Player.UserId] = new Zombie(player.Id, player.Nickname, player.UserId, player.IPAddress);
             }
-
-            if (plugin.zombies.ContainsKey(player.UserId) && plugin.zombies[player.UserId].Undead && player.Role != RoleType.Spectator)
+        }
+        public void OnRoundEnd()
+        {
+            foreach (Player player in Exiled.API.Features.Player.List)
             {
-                plugin.zombies[player.UserId].Undead = false;
-                plugin.zombies[ev.Player.UserId].Disconnected = false;
+                if (this.plugin.zombies.ContainsKey(player.UserId))
+                {
+                    this.plugin.zombies[player.UserId].Disconnected = false;
+                }
             }
-            else if (plugin.zombies.ContainsKey(player.UserId) && plugin.zombies[player.UserId].Disconnected && player.Role != RoleType.Scp0492)
+        }
+        public void OnPlayerRoleChange(ChangingRoleEventArgs ev)
+        {
+            Player player = ev.Player;
+            if (plugin.zombies[player.UserId].Disconnected)
             {
-                player.SetRole(RoleType.Scp0492, true);
-                Player targetPlayer = GetTeleportTarget(player);
+                plugin.zombies[player.UserId].Disconnected = false;
+                ev.NewRole = RoleType.Scp0492;
+            }
+        }
 
+        public void OnPlayerSpawn(SpawningEventArgs ev)
+        {
+            Player player = ev.Player;
+            if (ev.RoleType == RoleType.Scp0492)
+            {
+                Player targetPlayer = GetTeleportTarget(player);
                 if (targetPlayer != null)
                 {
-                    player.GameObject.transform.position = targetPlayer.GameObject.transform.position;
+                    ev.Position = targetPlayer.Position;
                 }
             }
         }
@@ -38,47 +53,20 @@
         public void OnPlayerDied(DiedEventArgs ev)
         {
             Player player = ev.Target;
-            if (ev.Killer.Role == RoleType.Scp049)
+            if (ev.Target.Role == RoleType.Scp0492)
             {
-                //this.plugin.scp049Kills.Add(ev.Player.IpAddress);
-                if (plugin.zombies.ContainsKey(player.UserId))
-                {
-                    plugin.zombies[player.UserId].Undead = true;
-                }
-                else
-                {
-                    plugin.zombies[player.UserId] = new Zombie(player.Id, player.Nickname, player.UserId, player.IPAddress);
-                    plugin.zombies[player.UserId].Undead = true;
-                }
-            }
-            else if (ev.Target.Role == RoleType.Scp0492)
-            {
-                if (plugin.zombies.ContainsKey(player.UserId))
-                {
-                    plugin.zombies[player.UserId].Undead = false;
                     plugin.zombies[player.UserId].Disconnected = false;
-                }
-                else
-                {
-                    plugin.zombies[player.UserId] = new Zombie(player.Id, player.Nickname, player.UserId, player.IPAddress);
-                    plugin.zombies[player.UserId].Undead = false;
-                    plugin.zombies[player.UserId].Disconnected = false;
-                }
             }
         }
-        /// <summary>
-        /// ///////////////////
-        /// </summary>
-        /// <param name="ev"></param>
+
         public void OnPlayerHurt(HurtingEventArgs ev)
         {
-            Log.Info($"PlayerHurt ran");
             if (ev.Target.Role == RoleType.Scp0492 && (ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall))
                 {
-                    Player targetPlayer = GetTeleportTarget(ev.Target);
-                ev.Amount = 0;
+                Player targetPlayer = GetTeleportTarget(ev.Target);
                 if (targetPlayer != null)
                     {
+                    ev.Amount = 0;
                     ev.Target.Position = targetPlayer.Position;
                     }
                 }
@@ -87,17 +75,14 @@
 
         public void OnPlayerLeft(LeftEventArgs ev)
         {
-            Log.Info($"Player Leave ran");
             if (ev.Player.Role == RoleType.Scp0492)
             {
-                plugin.zombies[ev.Player.UserId].Undead = false;
                 plugin.zombies[ev.Player.UserId].Disconnected = true;
             }
         }
         public Player GetTeleportTarget(Player sourcePlayer)
         {
             Player targetPlayer = null;
-            //TeamRole lastTeamRole = null;
             foreach (Player player in Exiled.API.Features.Player.List)
             {
                 if (sourcePlayer.UserId.Equals(player.UserId))

@@ -1,12 +1,12 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Collections.Generic;
+using Exiled.API.Features;
+using Player = Exiled.Events.Handlers.Player;
+using Server = Exiled.Events.Handlers.Server;
 
 namespace ZombieSuicideHotline
 {
-    using System;
-    using System.Collections.Generic;
-    using MEC;
-    using Exiled.API.Features;
-    using Player = Exiled.Events.Handlers.Player;
+
     public class Plugin : Exiled.API.Features.Plugin<SuicideConfig>
     {
         public override string Name { get; } = "Zombie Suicide Hotline";
@@ -16,11 +16,8 @@ namespace ZombieSuicideHotline
         public override string Prefix { get; } = "ZombieSuicideHotline";
 
         public PlayerHandlers PlayerHandlers;
-        public List<CoroutineHandle> Coroutines = new List<CoroutineHandle>();
         public Dictionary<string, Zombie> zombies = new Dictionary<string, Zombie>();
-        public Random Gen = new Random();
         public static Plugin Singleton;
-        public Harmony Instance;
 
         public override void OnEnabled()
         {
@@ -34,6 +31,20 @@ namespace ZombieSuicideHotline
             Player.Died += PlayerHandlers.OnPlayerDied;
             Player.Left += PlayerHandlers.OnPlayerLeft;
             Player.Hurting += PlayerHandlers.OnPlayerHurt;
+            Player.ChangingRole += PlayerHandlers.OnPlayerRoleChange;
+            Player.Spawning += PlayerHandlers.OnPlayerSpawn;
+            Server.RoundStarted += PlayerHandlers.OnRoundEnd;
+        }
+        public override void OnDisabled()
+        {
+            Player.Joined -= PlayerHandlers.OnPlayerJoined;
+            Player.Died -= PlayerHandlers.OnPlayerDied;
+            Player.Left -= PlayerHandlers.OnPlayerLeft;
+            Player.Hurting -= PlayerHandlers.OnPlayerHurt;
+            Player.ChangingRole -= PlayerHandlers.OnPlayerRoleChange;
+            Player.Spawning -= PlayerHandlers.OnPlayerSpawn;
+            Server.RoundStarted -= PlayerHandlers.OnRoundEnd;
+
         }
     }
 
