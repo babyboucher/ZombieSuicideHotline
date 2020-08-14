@@ -7,7 +7,7 @@ using Server = Exiled.Events.Handlers.Server;
 namespace ZombieSuicideHotline
 {
 
-    public class Plugin : Exiled.API.Features.Plugin<SuicideConfig>
+    public class Plugin : Plugin<SuicideConfig>
     {
         public override string Name { get; } = "Zombie Suicide Hotline";
         public override string Author { get; } = "Babyboucher20";

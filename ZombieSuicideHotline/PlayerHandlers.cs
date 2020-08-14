@@ -48,6 +48,10 @@
                     ev.Position = targetPlayer.Position;
                 }
             }
+            if (ev.RoleType == RoleType.Scp049)
+            {
+                player.Broadcast(10, "Use .recall to bring all your zombies to you");
+            }
         }
 
         public void OnPlayerDied(DiedEventArgs ev)
@@ -66,7 +70,7 @@
                 Player targetPlayer = GetTeleportTarget(ev.Target);
                 if (targetPlayer != null)
                     {
-                    ev.Amount = 0;
+                    ev.Amount = plugin.Config.ZombieDmg;
                     ev.Target.Position = targetPlayer.Position;
                     }
                 }
@@ -80,6 +84,7 @@
                 plugin.zombies[ev.Player.UserId].Disconnected = true;
             }
         }
+
         public Player GetTeleportTarget(Player sourcePlayer)
         {
             Player targetPlayer = null;
