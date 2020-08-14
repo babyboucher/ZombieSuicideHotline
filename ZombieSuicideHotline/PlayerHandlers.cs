@@ -2,6 +2,7 @@
 {
     using Exiled.Events.EventArgs;
     using Player = Exiled.API.Features.Player;
+    using Exiled.API.Features;
 
     public class PlayerHandlers
     {
@@ -10,10 +11,17 @@
 
         public void OnPlayerJoined(JoinedEventArgs ev)
         {
+            Log.Info($"PlayerJoin ran");
             Player player = ev.Player;
+            if (!this.plugin.zombies.ContainsKey(ev.Player.UserId))
+            {
+                this.plugin.zombies[ev.Player.UserId] = new Zombie(player.Id, player.Nickname, player.UserId, player.IPAddress);
+            }
+
             if (plugin.zombies.ContainsKey(player.UserId) && plugin.zombies[player.UserId].Undead && player.Role != RoleType.Spectator)
             {
                 plugin.zombies[player.UserId].Undead = false;
+                plugin.zombies[ev.Player.UserId].Disconnected = false;
             }
             else if (plugin.zombies.ContainsKey(player.UserId) && plugin.zombies[player.UserId].Disconnected && player.Role != RoleType.Scp0492)
             {
@@ -64,14 +72,14 @@
         /// <param name="ev"></param>
         public void OnPlayerHurt(HurtingEventArgs ev)
         {
-                if (ev.Target.Role == RoleType.Scp0492 && (ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall))
+            Log.Info($"PlayerHurt ran");
+            if (ev.Target.Role == RoleType.Scp0492 && (ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall))
                 {
                     Player targetPlayer = GetTeleportTarget(ev.Target);
-
-                    if (targetPlayer != null)
+                ev.Amount = 0;
+                if (targetPlayer != null)
                     {
-                        ev.Amount = 0;
-                        ev.Target.GameObject.transform.position = targetPlayer.GameObject.transform.position;
+                    ev.Target.Position = targetPlayer.Position;
                     }
                 }
             
@@ -79,6 +87,7 @@
 
         public void OnPlayerLeft(LeftEventArgs ev)
         {
+            Log.Info($"Player Leave ran");
             if (ev.Player.Role == RoleType.Scp0492)
             {
                 plugin.zombies[ev.Player.UserId].Undead = false;
