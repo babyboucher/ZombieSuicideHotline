@@ -42,7 +42,6 @@ namespace ZombieSuicideHotline
                     response = "You must be SCP 049 to use this command!";
                 }
                 return true;
-            }
         }
     }
 }
