@@ -65,7 +65,7 @@
 
         public void OnPlayerHurt(HurtingEventArgs ev)
         {
-            if (ev.Target.Role == RoleType.Scp0492 && (ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall))
+            if (ev.Target.Role == RoleType.Scp0492 && (ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall || ev.DamageType == DamageTypes.Decont))
                 {
                 Player targetPlayer = GetTeleportTarget(ev.Target);
                 if (targetPlayer != null)
