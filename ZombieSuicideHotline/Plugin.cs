@@ -1,19 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using Exiled.API.Features;
-using Player = Exiled.Events.Handlers.Player;
-using Server = Exiled.Events.Handlers.Server;
 
 namespace ZombieSuicideHotline
 {
+	using Exiled.API.Features;
+	using Player = Exiled.Events.Handlers.Player;
+	using Server = Exiled.Events.Handlers.Server;
 
-    public class Plugin : Plugin<SuicideConfig>
+	public class Plugin : Plugin<Config>
     {
-        public override string Name { get; } = "Zombie Suicide Hotline";
-        public override string Author { get; } = "Babyboucher20";
-        public override Version Version { get; } = new Version(1, 0, 0);
+        public override string Name { get; } = ZombieSuicideHotline.AssemblyInfo.Name;
+        public override string Author { get; } = ZombieSuicideHotline.AssemblyInfo.Author;
+        public override Version Version { get; } = new Version(ZombieSuicideHotline.AssemblyInfo.Version);
         //public override Version RequiredExiledVersion { get; } = new Version(2, 0, 12);
-        public override string Prefix { get; } = "ZombieSuicideHotline";
+        public override string Prefix { get; } = ZombieSuicideHotline.AssemblyInfo.ConfigPrefix;
 
         public PlayerHandlers PlayerHandlers;
         public Dictionary<string, Zombie> zombies = new Dictionary<string, Zombie>();

@@ -3,7 +3,7 @@ using Exiled.API.Interfaces;
 
 namespace ZombieSuicideHotline
 {
-    public class SuicideConfig : IConfig {
+    public class Config : IConfig {
         [Description("Is the plugin enabled?")]
         public bool IsEnabled { get; set; } = true;
 
