@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Exiled.API.Interfaces;
+using System.Collections.Generic;
 
 namespace ZombieSuicideHotline
 {
@@ -7,7 +8,12 @@ namespace ZombieSuicideHotline
         [Description("Is the plugin enabled?")]
         public bool IsEnabled { get; set; } = true;
 
-        [Description("How much do Teslas and Drops deal to zombies?")]
-        public float ZombieDmg { get; set; } = 0;
+        [Description("A list of classes that should beable to call the suicide hotline and what precent of their health is done")]
+        public Dictionary<string, float> HotlineCalls { get; set; } = new Dictionary<string, float>
+        {
+            {
+                "Scp0492", 0.5f
+            },
+        };
     }
 }

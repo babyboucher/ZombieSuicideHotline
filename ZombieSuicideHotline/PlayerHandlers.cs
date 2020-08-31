@@ -65,16 +65,18 @@
 
         public void OnPlayerHurt(HurtingEventArgs ev)
         {
-            if (ev.Target.Role == RoleType.Scp0492 && (ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall || ev.DamageType == DamageTypes.Decont))
+            if ((ev.DamageType == DamageTypes.Tesla || ev.DamageType == DamageTypes.Wall || ev.DamageType == DamageTypes.Decont))
                 {
-                Player targetPlayer = GetTeleportTarget(ev.Target);
-                if (targetPlayer != null)
+                if (plugin.Config.HotlineCalls.ContainsKey(ev.Target.Role.ToString())) 
+                {
+                    Player targetPlayer = GetTeleportTarget(ev.Target);
+                    if (targetPlayer != null)
                     {
-                    ev.Amount = plugin.Config.ZombieDmg;
-                    ev.Target.Position = targetPlayer.Position;
+                        ev.Amount = (ev.Target.Health * plugin.Config.HotlineCalls[ev.Target.Role.ToString()]);
+                        ev.Target.Position = targetPlayer.Position;
                     }
-                }
-            
+                } 
+            }
         }
 
         public void OnPlayerLeft(LeftEventArgs ev)
