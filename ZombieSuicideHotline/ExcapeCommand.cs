@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
     [CommandHandler(typeof(ClientCommandHandler))]
     class ExcapeCommand : ICommand
     {
-        public string Command => "respawn"; //Why is this called respawn?
+        public string Command => "retreat"; //Why is this called respawn?
 
         public string[] Aliases => null;
 
@@ -35,7 +35,7 @@ namespace ZombieSuicideHotline
                     }
                     else
                     {
-                        response = "respawn is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RespawnCD - Time.time).ToString();
+                        response = "retreat is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RespawnCD - Time.time).ToString();
                     }
                 }
                 if (response == "")

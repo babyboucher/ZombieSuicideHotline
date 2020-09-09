@@ -54,7 +54,7 @@
             }
             if (ev.RoleType == RoleType.Scp173)
             {
-                player.Broadcast(10, "Use .respawn to teleport to other SCPs");
+                player.Broadcast(10, "Use .retreat to teleport to other SCPs");
             }
         }
 
