@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CommandSystem;
 using Exiled.API.Features;
 using RemoteAdmin;
+using UnityEngine;
 
 namespace ZombieSuicideHotline
 {
@@ -28,8 +29,15 @@ namespace ZombieSuicideHotline
                     {
                         if (players.Role == RoleType.Scp0492)
                         {
-                            players.Position = player.Position;
-                            response = "Zombies recalled!";
+                            if (Timerfunc())
+                            {
+                                players.Position = player.Position;
+                                response = "Zombies recalled!";
+                            }
+                            else
+                            {
+                                response = "Recall is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RecallCD - Time.time).ToString();
+                            }
                         }
                     }
                     if (response == "")
@@ -41,7 +49,18 @@ namespace ZombieSuicideHotline
                 {
                     response = "You must be SCP 049 to use this command!";
                 }
+                //return true;
+            return true;
+        }
+        public float Lasttime = 0;
+        public bool Timerfunc()
+        {
+            if (Lasttime + Plugin.Singleton.Config.RecallCD < Time.time)
+            {
+                Lasttime = Time.time;
                 return true;
+            }
+            return false;
         }
     }
 }
