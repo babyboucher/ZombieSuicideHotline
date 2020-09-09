@@ -52,6 +52,10 @@
             {
                 player.Broadcast(10, "Use .recall to bring all your zombies to you");
             }
+            if (ev.RoleType == RoleType.Scp173)
+            {
+                player.Broadcast(10, "Use .respawn to teleport to other SCPs");
+            }
         }
 
         public void OnPlayerDied(DiedEventArgs ev)
