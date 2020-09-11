@@ -30,7 +30,7 @@
         public void OnPlayerRoleChange(ChangingRoleEventArgs ev)
         {
             Player player = ev.Player;
-            if (plugin.zombies[player.UserId].Disconnected)
+            if  (this.plugin.zombies.ContainsKey(player.UserId))
             {
                 plugin.zombies[player.UserId].Disconnected = false;
                 ev.NewRole = RoleType.Scp0492;
