@@ -32,8 +32,11 @@
             Player player = ev.Player;
             if  (this.plugin.zombies.ContainsKey(player.UserId))
             {
-                plugin.zombies[player.UserId].Disconnected = false;
-                ev.NewRole = RoleType.Scp0492;
+                if (plugin.zombies[player.UserId].Disconnected)
+                {
+                    plugin.zombies[player.UserId].Disconnected = false;
+                    ev.NewRole = RoleType.Scp0492;
+                }
             }
         }
 
