@@ -36,7 +36,7 @@ namespace ZombieSuicideHotline
                             }
                             else
                             {
-                                response = "Recall is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RecallCD - Time.time).ToString();
+                                response = "Recall is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RecallCooldown - Time.time).ToString();
                             }
                         }
                     }
@@ -55,7 +55,7 @@ namespace ZombieSuicideHotline
         public float Lasttime = 0;
         public bool Timerfunc()
         {
-            if (Lasttime + Plugin.Singleton.Config.RecallCD < Time.time)
+            if (Lasttime + Plugin.Singleton.Config.RecallCooldown < Time.time)
             {
                 Lasttime = Time.time;
                 return true;

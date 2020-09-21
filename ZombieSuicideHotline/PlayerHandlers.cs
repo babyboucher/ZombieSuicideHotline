@@ -77,7 +77,7 @@
                 if (plugin.Config.HotlineCalls.ContainsKey(ev.Target.Role.ToString())) 
                 {
                     Player targetPlayer = GetTeleportTarget(ev.Target);
-                    if (targetPlayer != null)
+                    if (targetPlayer != null && plugin.Config.HotlineCalls[ev.Target.Role.ToString()] != -1)
                     {
                         ev.Amount = (ev.Target.Health * plugin.Config.HotlineCalls[ev.Target.Role.ToString()]);
                         ev.Target.Position = targetPlayer.Position;

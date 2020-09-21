@@ -11,7 +11,7 @@ using UnityEngine;
 namespace ZombieSuicideHotline
 {
     [CommandHandler(typeof(ClientCommandHandler))]
-    class ExcapeCommand : ICommand
+    class RetreatCommand : ICommand
     {
         public string Command => "retreat"; //Why is this called respawn?
 
@@ -35,7 +35,7 @@ namespace ZombieSuicideHotline
                     }
                     else
                     {
-                        response = "retreat is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RespawnCD - Time.time).ToString();
+                        response = "retreat is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RetreatCooldown - Time.time).ToString();
                     }
                 }
                 if (response == "")
@@ -52,7 +52,7 @@ namespace ZombieSuicideHotline
         public float Lasttime = 0;
         public bool Timerfunc()
         {
-            if (Lasttime + Plugin.Singleton.Config.RespawnCD < Time.time)
+            if (Lasttime + Plugin.Singleton.Config.RetreatCooldown < Time.time)
             {
                 Lasttime = Time.time;
                 return true;

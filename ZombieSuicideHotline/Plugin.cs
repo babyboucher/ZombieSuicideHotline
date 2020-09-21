@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace ZombieSuicideHotline
 {
 	using Exiled.API.Features;
+	using UnityEngine;
 	using Player = Exiled.Events.Handlers.Player;
 	using Server = Exiled.Events.Handlers.Server;
 
@@ -19,7 +20,9 @@ namespace ZombieSuicideHotline
         public Dictionary<string, Zombie> zombies = new Dictionary<string, Zombie>();
         public static Plugin Singleton;
 
-        public override void OnEnabled()
+		internal Dictionary<RoleType, Vector3> scpSpawns = new Dictionary<RoleType, Vector3>();
+
+		public override void OnEnabled()
         {
             Singleton = this;
 
