@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using Exiled.API.Interfaces;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace ZombieSuicideHotline
 {
@@ -39,5 +40,28 @@ namespace ZombieSuicideHotline
 				"Scp93989", -1f
 			},
 		};
-    }
+
+		[Description("A list of classes that should go back to there spawn if there are no valid SCPs to go to")]
+		public Dictionary<string, Vector3> Gobacktospawn { get; set; } = new Dictionary<string, Vector3>
+		{
+			{
+				"Scp049", new Vector3(0.0f, 1.0f, 0.0f)
+			},
+			{
+				"Scp096", new Vector3(0.0f, 1.0f, 0.0f)
+			},
+			{
+				"Scp106", new Vector3(0.0f, 1.0f, 0.0f)
+			},
+			{
+				"Scp173", new Vector3(0.0f, 1.0f, 0.0f)
+			},
+			{
+				"Scp93953", new Vector3(0.0f, 1.0f, 0.0f)
+			},
+			{
+				"Scp93989", new Vector3(0.0f, 1.0f, 0.0f)
+			},
+		};
+	}
 }

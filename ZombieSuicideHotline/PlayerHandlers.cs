@@ -3,6 +3,7 @@
     using Exiled.Events.EventArgs;
     using Player = Exiled.API.Features.Player;
     using Exiled.API.Features;
+    using UnityEngine;
 
     public class PlayerHandlers
     {
@@ -24,6 +25,7 @@
                 if (this.plugin.zombies.ContainsKey(player.UserId))
                 {
                     this.plugin.zombies[player.UserId].Disconnected = false;
+                    this.plugin.zombies[player.UserId].LastDeath = 0f;
                 }
             }
         }
@@ -51,6 +53,10 @@
                     ev.Position = targetPlayer.Position;
                 }
             }
+            if (Plugin.Singleton.Config.Gobacktospawn.ContainsKey(player.Role.ToString()))
+            {
+                Plugin.Singleton.Config.Gobacktospawn[player.Role.ToString()] = player.Position;
+            }
             if (ev.RoleType == RoleType.Scp049)
             {
                 player.Broadcast(10, "Use .recall to bring all your zombies to you");
@@ -68,6 +74,10 @@
             {
                     plugin.zombies[player.UserId].Disconnected = false;
             }
+            if (ev.Killer.Role == RoleType.Scp049)
+            {
+                plugin.zombies[player.UserId].LastDeath = Time.time;
+            }
         }
 
         public void OnPlayerHurt(HurtingEventArgs ev)
@@ -82,6 +92,14 @@
                         ev.Amount = (ev.Target.Health * plugin.Config.HotlineCalls[ev.Target.Role.ToString()]);
                         ev.Target.Position = targetPlayer.Position;
                     }
+                    if (Plugin.Singleton.Config.Gobacktospawn.ContainsKey(ev.Target.Role.ToString()))
+                    {
+                        ev.Target.Position = Plugin.Singleton.Config.Gobacktospawn[ev.Target.Role.ToString()];
+                    }
+                    if (ev.Target.Role == RoleType.Scp0492)
+                    {
+                        ev.Target.Position = Plugin.Singleton.Config.Gobacktospawn["Scp049"];
+                    }
                 } 
             }
         }
@@ -89,6 +107,10 @@
         public void OnPlayerLeft(LeftEventArgs ev)
         {
             if (ev.Player.Role == RoleType.Scp0492)
+            {
+                plugin.zombies[ev.Player.UserId].Disconnected = true;
+            }
+            if (this.plugin.zombies[ev.Player.UserId].LastDeath + 10 <Time.time)
             {
                 plugin.zombies[ev.Player.UserId].Disconnected = true;
             }
@@ -109,9 +131,12 @@
                     continue;
                 }
 
-                if (targetPlayer == null)
+                if (player.Role != RoleType.Scp0492 || player.Role != RoleType.Scp173)
                 {
-                    targetPlayer = player;
+                    if (player.Role == RoleType.Scp106)
+                    {
+                        continue;
+                    }
                 }
 
                 if (player.Team == Team.SCP)
