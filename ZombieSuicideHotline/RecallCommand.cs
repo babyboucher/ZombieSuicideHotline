@@ -25,20 +25,20 @@ namespace ZombieSuicideHotline
             Player player = Player.Get(((CommandSender)sender).SenderId);
                 if (player.Role == RoleType.Scp049)
                 {
-                    foreach (Player players in Exiled.API.Features.Player.List)
+                    if (Timerfunc())
                     {
-                        if (players.Role == RoleType.Scp0492)
+                        foreach (Player players in Exiled.API.Features.Player.List)
                         {
-                            if (Timerfunc())
+                            if (players.Role == RoleType.Scp0492)
                             {
                                 players.Position = player.Position;
                                 response = "Zombies recalled!";
                             }
-                            else
-                            {
-                                response = "Recall is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RecallCooldown - Time.time).ToString();
-                            }
                         }
+                    }
+                    else
+                    {
+                        response = "Recall is on cooldown for " + (Lasttime + Plugin.Singleton.Config.RecallCooldown - Time.time).ToString();
                     }
                     if (response == "")
                     {
@@ -49,7 +49,6 @@ namespace ZombieSuicideHotline
                 {
                     response = "You must be SCP 049 to use this command!";
                 }
-                //return true;
             return true;
         }
         public float Lasttime = 0;
