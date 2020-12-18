@@ -13,7 +13,7 @@ namespace ZombieSuicideHotline
     [CommandHandler(typeof(ClientCommandHandler))]
     class RetreatCommand : ICommand
     {
-        public string Command => "retreat";
+        public string Command => "retreat"; //Why is this called respawn?
 
         public string[] Aliases => null;
 
@@ -78,13 +78,6 @@ namespace ZombieSuicideHotline
                 {
                     targetPlayer = player;
                     break;
-                }
-            }
-            if (targetPlayer == null)
-            {
-                if (Plugin.Singleton.Config.Gobacktospawn.ContainsKey(sourcePlayer.Role.ToString()))
-                {
-                    sourcePlayer.Position = Plugin.Singleton.Config.Gobacktospawn[sourcePlayer.Role.ToString()];
                 }
             }
             return targetPlayer;

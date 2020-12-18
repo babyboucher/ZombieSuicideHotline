@@ -57,7 +57,7 @@ namespace ZombieSuicideHotline
         public string Name;
         public string SteamId;
         public string IpAddress;
-        public float LastDeath = 0f;
+        public int LastRecall = 0;
         public bool Undead = false;
         public bool Disconnected = false;
         //public Dictionary<string, Zombie> Zombies = new Dictionary<string, Zombie>();
@@ -73,7 +73,7 @@ namespace ZombieSuicideHotline
 
         public override string ToString()
         {
-            return "[ PlayerId: " + PlayerId + ", Name: " + Name + ", SteamID: " + SteamId + ", IpAddress: " + IpAddress + ", LastRecall: " + LastDeath + ", Undead: " + Undead + ", Disconnected: " + Disconnected + " ]";
+            return "[ PlayerId: " + PlayerId + ", Name: " + Name + ", SteamID: " + SteamId + ", IpAddress: " + IpAddress + ", LastRecall: " + LastRecall + ", Undead: " + Undead + ", Disconnected: " + Disconnected + " ]";
         }
     }
 }
