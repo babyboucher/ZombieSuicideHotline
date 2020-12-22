@@ -93,7 +93,7 @@
                     }
                     else
                     {
-                        if (plugin.Config.HotlineCalls[ev.Target.Role.ToString()] != -1)
+                        if (plugin.Config.HotlineCalls[ev.Target.Role.ToString()] != -1 && Spawns.ContainsKey(ev.Target.Role))
                         {
                             ev.Amount = (ev.Target.Health * plugin.Config.HotlineCalls[ev.Target.Role.ToString()]);
                             ev.Target.Position = Spawns[(ev.Target.Role)];
